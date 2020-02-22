@@ -49,20 +49,16 @@ public class JdbcPermissionsRepository implements PermissionsRepository {
 
         final PreparedStatementParser parser = new PreparedStatementParser();
 
-        this.getByIdStatement = parser
-                .parse(GET_PERMISSION_STATEMENT)
+        this.getByIdStatement = parser.parse(GET_PERMISSION_STATEMENT)
                 .prepare(connectionProvider.getConnection());
 
-        this.searchStatement = parser
-                .parse(SEARCH_PERMISSION_STATEMENT)
+        this.searchStatement = parser.parse(SEARCH_PERMISSION_STATEMENT)
                 .prepare(connectionProvider.getConnection());
 
-        this.searchByGroupStatement = parser
-                .parse(SEARCH_BY_GROUP_PERMISSION_STATEMENT)
+        this.searchByGroupStatement = parser.parse(SEARCH_BY_GROUP_PERMISSION_STATEMENT)
                 .prepare(connectionProvider.getConnection());
 
-        this.saveStatement = parser
-                .parse(INSERT_PERMISSION_STATEMENT)
+        this.saveStatement = parser.parse(INSERT_PERMISSION_STATEMENT)
                 .prepare(connectionProvider.getConnection());
     }
 
