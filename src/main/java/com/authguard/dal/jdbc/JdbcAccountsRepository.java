@@ -4,8 +4,8 @@ import com.authguard.dal.AccountsRepository;
 import com.authguard.dal.PermissionsRepository;
 import com.authguard.dal.RolesRepository;
 import com.authguard.dal.jdbc.model.AccountJoinedRow;
-import com.authguard.dal.jdbc.util.PreparedStatementParser;
-import com.authguard.dal.jdbc.util.TemplateBuilder;
+import com.authguard.dal.jdbc.statements.AccountsStatements;
+import com.authguard.dal.jdbc.util.TemplateStatementParser;
 import com.authguard.dal.jdbc.util.TemplateStatement;
 import com.authguard.dal.model.AccountDO;
 import com.authguard.dal.model.PermissionDO;
@@ -15,28 +15,12 @@ import com.google.inject.Inject;
 
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
 public class JdbcAccountsRepository implements AccountsRepository {
-    private final static String GET_ACCOUNT_STATEMENT = TemplateBuilder.select()
-            .table("accounts")
-            .whereStatement("id = ${id}")
-            .joinedStatement("account_permissions ON account_permissions.accountId = accounts.id LEFT JOIN account_roles ON account_roles.accountId = accounts.id")
-            .build();
-
-    private final static String INSERT_ACCOUNT_STATEMENT = TemplateBuilder.insert()
-            .table("accounts")
-            .values(Arrays.asList("${id}", "${deleted}", "${active}", "${scopes}"))
-            .build();
-
-    private static final String INSERT_ACCOUNT_PERMISSION_STATEMENT = TemplateBuilder.insert()
-            .table("account_permissions")
-            .values(Arrays.asList("${accountId}", "${permissionId}"))
-            .build();
 
     private final JdbcQueryRunner queryRunner;
 
@@ -54,15 +38,15 @@ public class JdbcAccountsRepository implements AccountsRepository {
         this.permissionsRepository = permissionsRepository;
         this.rolesRepository = rolesRepository;
 
-        final PreparedStatementParser parser = new PreparedStatementParser();
+        final TemplateStatementParser parser = new TemplateStatementParser();
 
-        this.getByIdStatement = parser.parse(GET_ACCOUNT_STATEMENT)
+        this.getByIdStatement = parser.parse(AccountsStatements.GET_STATEMENT)
                 .prepare(connectionProvider.getConnection());
 
-        this.saveStatement = parser.parse(INSERT_ACCOUNT_STATEMENT)
+        this.saveStatement = parser.parse(AccountsStatements.INSERT_STATEMENT)
                 .prepare(connectionProvider.getConnection());
 
-        this.savePermissionsStatement = parser.parse(INSERT_ACCOUNT_PERMISSION_STATEMENT)
+        this.savePermissionsStatement = parser.parse(AccountsStatements.INSERT_PERMISSION_STATEMENT)
                 .prepare(connectionProvider.getConnection());
     }
 

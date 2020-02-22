@@ -4,12 +4,12 @@ import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-class PreparedStatementParserTest {
+class TemplateStatementParserTest {
 
     @Test
     void parse() {
         final String template = "SELECT * FROM ${table} WHERE id = ${id} OR id = ${id}";
-        final PreparedStatementParser parser = new PreparedStatementParser();
+        final TemplateStatementParser parser = new TemplateStatementParser();
 
         parser.parse(template);
 

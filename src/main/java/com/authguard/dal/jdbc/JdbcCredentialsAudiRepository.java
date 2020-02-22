@@ -1,38 +1,18 @@
 package com.authguard.dal.jdbc;
 
 import com.authguard.dal.CredentialsAuditRepository;
-import com.authguard.dal.jdbc.util.FieldMappers;
-import com.authguard.dal.jdbc.util.PreparedStatementParser;
-import com.authguard.dal.jdbc.util.TemplateBuilder;
-import com.authguard.dal.jdbc.util.TemplateStatement;
+import com.authguard.dal.jdbc.statements.CredentialsAuditStatements;
+import com.authguard.dal.jdbc.util.*;
 import com.authguard.dal.model.CredentialsAuditDO;
 import com.google.common.collect.ImmutableMap;
 import com.google.inject.Inject;
 
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
 public class JdbcCredentialsAudiRepository implements CredentialsAuditRepository {
-    private static final String TABLE = "credentials_audit";
-
-    private static final String GET_BY_ID_TEMPLATE = TemplateBuilder.select()
-            .table(TABLE)
-            .whereStatement("id = ${id}")
-            .build();
-
-    private static final String GET_BY_CREDENTIALS_ID_TEMPLATE = TemplateBuilder.select()
-            .table(TABLE)
-            .whereStatement("credentialId = ${credentialId}")
-            .build();
-
-    private static final String INSERT_TEMPLATE = TemplateBuilder.insert()
-            .table(TABLE)
-            .values(Arrays.asList("${id}", "${deleted}", "${action}", "${credentialId}", "${username}", // TODO credentialId is a typo in the DO, change when it's fixed
-                    "${password.password}", "${password.salt}"))
-            .build();
 
     private final JdbcQueryRunner queryRunner;
 
@@ -40,27 +20,28 @@ public class JdbcCredentialsAudiRepository implements CredentialsAuditRepository
     private final TemplateStatement getByCredentialsIdStatement;
     private final TemplateStatement saveStatement;
 
+    private final FieldMapper passwordFieldMapper = FieldMappers.shallow(CredentialsAuditDO.class, "password");
+
     @Inject
     public JdbcCredentialsAudiRepository(final ConnectionProvider connectionProvider) throws SQLException {
         this.queryRunner = new JdbcQueryRunner(connectionProvider.getConnection());
 
-        final PreparedStatementParser parser = new PreparedStatementParser();
+        final TemplateStatementParser parser = new TemplateStatementParser();
 
-        this.getByIdStatement = parser.parse(GET_BY_ID_TEMPLATE)
+        this.getByIdStatement = parser.parse(CredentialsAuditStatements.GET_BY_ID_TEMPLATE)
                 .prepare(connectionProvider.getConnection());
 
-        this.getByCredentialsIdStatement = parser.parse(GET_BY_CREDENTIALS_ID_TEMPLATE)
+        this.getByCredentialsIdStatement = parser.parse(CredentialsAuditStatements.GET_BY_CREDENTIALS_ID_TEMPLATE)
                 .prepare(connectionProvider.getConnection());
 
-        this.saveStatement = parser.parse(INSERT_TEMPLATE)
+        this.saveStatement = parser.parse(CredentialsAuditStatements.INSERT_TEMPLATE)
                 .prepare(connectionProvider.getConnection());
     }
 
     @Override
     public CredentialsAuditDO save(final CredentialsAuditDO credentialsAuditDO) {
         try {
-            final PreparedStatement preparedStatement = saveStatement.build(credentialsAuditDO,
-                    FieldMappers.shallow(credentialsAuditDO, "password"));
+            final PreparedStatement preparedStatement = saveStatement.build(credentialsAuditDO, passwordFieldMapper);
 
             queryRunner.execute(preparedStatement);
 
@@ -74,8 +55,7 @@ public class JdbcCredentialsAudiRepository implements CredentialsAuditRepository
     public Optional<CredentialsAuditDO> getById(final String id) {
         try {
             final PreparedStatement preparedStatement = getByIdStatement.build(ImmutableMap.of("id", id));
-            final List<CredentialsAuditDO> rows = queryRunner.execute(preparedStatement, CredentialsAuditDO.class,
-                    FieldMappers.shallow(CredentialsAuditDO.class, "password"));
+            final List<CredentialsAuditDO> rows = queryRunner.execute(preparedStatement, CredentialsAuditDO.class, passwordFieldMapper);
 
             return rows.stream().findFirst();
         } catch (final SQLException e) {
@@ -87,8 +67,7 @@ public class JdbcCredentialsAudiRepository implements CredentialsAuditRepository
     public List<CredentialsAuditDO> findByCredentialsId(final String credentialsId) {
         try {
             final PreparedStatement preparedStatement = getByCredentialsIdStatement.build(ImmutableMap.of("credentialId", credentialsId));
-            final List<CredentialsAuditDO> rows = queryRunner.execute(preparedStatement, CredentialsAuditDO.class,
-                    FieldMappers.shallow(CredentialsAuditDO.class, "password"));
+            final List<CredentialsAuditDO> rows = queryRunner.execute(preparedStatement, CredentialsAuditDO.class, passwordFieldMapper);
 
             return rows;
         } catch (final SQLException e) {

@@ -9,14 +9,14 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public class FieldMappers {
-    public static FieldMapper shallow(final Object object, final String fieldName) {
-        try {
-            return shallow(object.getClass().getDeclaredField(fieldName));
-        } catch (NoSuchFieldException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
+    /**
+     * Generates a shallow mapper which only goes one field deep. It's used to
+     * map a nested field to multiple row fields and vice versa. For example
+     * if an entity has a field 'nested { first: string, second: string }' then
+     * this mapper will map to two fields 'nested.first' and 'nested.second'. It
+     * will also map the row fields back to the original structure as map so
+     * that Jackson can convert it back to the correct structure.
+     */
     public static FieldMapper shallow(final Class<?> clazz, final String fieldName) {
         try {
             return shallow(clazz.getDeclaredField(fieldName));
@@ -51,14 +51,14 @@ public class FieldMappers {
         return map -> {
             final Map<String, Object> normalized = map.entrySet().stream()
                     .filter(entry -> entry.getKey().startsWith(field.getName() + "."))
-                    .collect(Collectors.toMap(entry -> nomralizeFieldName(entry.getKey()), Map.Entry::getValue));
+                    .collect(Collectors.toMap(entry -> normalizeFieldName(entry.getKey()), Map.Entry::getValue));
 
             return ImmutableMap.of(field.getName(), normalized);
         };
 
     }
 
-    private static String nomralizeFieldName(final String name) {
+    private static String normalizeFieldName(final String name) {
         final String[] parts = name.split("\\.");
 
         return parts.length < 2 ? name : parts[1];

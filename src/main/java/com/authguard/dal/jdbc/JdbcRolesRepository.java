@@ -1,8 +1,8 @@
 package com.authguard.dal.jdbc;
 
 import com.authguard.dal.RolesRepository;
-import com.authguard.dal.jdbc.util.PreparedStatementParser;
-import com.authguard.dal.jdbc.util.TemplateBuilder;
+import com.authguard.dal.jdbc.statements.RolesStatements;
+import com.authguard.dal.jdbc.util.TemplateStatementParser;
 import com.authguard.dal.jdbc.util.TemplateStatement;
 import com.authguard.dal.model.RoleDO;
 import com.google.common.collect.ImmutableMap;
@@ -10,26 +10,11 @@ import com.google.inject.Inject;
 
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
 public class JdbcRolesRepository implements RolesRepository {
-    private final static String GET_STATEMENT = TemplateBuilder.select()
-            .table("roles")
-            .whereStatement("id = ${id}")
-            .build();
-
-    private final static String GET_BY_NAME_STATEMENT = TemplateBuilder.select()
-            .table("roles")
-            .whereStatement("name = ${name}")
-            .build();
-
-    private final static String INSERT_STATEMENT = TemplateBuilder.insert()
-            .table("roles")
-            .values(Arrays.asList("${id}", "${deleted}", "${name}"))
-            .build();
 
     private final JdbcQueryRunner queryRunner;
 
@@ -41,18 +26,18 @@ public class JdbcRolesRepository implements RolesRepository {
     public JdbcRolesRepository(final ConnectionProvider connectionProvider) throws SQLException {
         this.queryRunner = new JdbcQueryRunner(connectionProvider.getConnection());
 
-        final PreparedStatementParser parser = new PreparedStatementParser();
+        final TemplateStatementParser parser = new TemplateStatementParser();
 
         this.getByIdStatement = parser
-                .parse(GET_STATEMENT)
+                .parse(RolesStatements.GET_STATEMENT)
                 .prepare(connectionProvider.getConnection());
 
         this.getByNameStatement = parser
-                .parse(GET_BY_NAME_STATEMENT)
+                .parse(RolesStatements.GET_BY_NAME_STATEMENT)
                 .prepare(connectionProvider.getConnection());
 
         this.saveStatement = parser
-                .parse(INSERT_STATEMENT)
+                .parse(RolesStatements.INSERT_STATEMENT)
                 .prepare(connectionProvider.getConnection());
     }
 
