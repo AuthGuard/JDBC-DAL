@@ -5,11 +5,11 @@ import java.util.regex.MatchResult;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class PreparedStatementParser {
+public class TemplateStatementParser {
     private final String variablesRegex;
     private final Pattern variablesPattern;
 
-    public PreparedStatementParser() {
+    public TemplateStatementParser() {
         this.variablesRegex = "\\$\\{[\\w|\\\\.]+\\}";
         this.variablesPattern = Pattern.compile(variablesRegex);
     }

@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.sql.SQLException;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.stream.Collectors;
 
@@ -28,6 +29,24 @@ public class TablesBootstrap {
             queryRunner.execute(table.getValue());
             log.info("Table {} was successfully created", table.getKey());
         }
+    }
+
+    public void bootstrapTable(final String table) {
+        final Properties properties = loadTablesProperties();
+        final Map<String, String> tables = parseMap(properties, "tables");
+
+        Optional.ofNullable(tables.get(table))
+                .ifPresentOrElse(tableQuery -> {
+                    log.info("Creating table {}", table);
+
+                    try {
+                        queryRunner.execute(tableQuery);
+                    } catch (SQLException e) {
+                        throw new RuntimeException(e);
+                    }
+
+                    log.info("Table {} was successfully created", table);
+                }, () -> log.info("No table bootstrap statement for table {}", table));
     }
 
     private Properties loadTablesProperties() {
