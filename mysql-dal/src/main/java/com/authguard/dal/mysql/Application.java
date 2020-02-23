@@ -1,3 +1,5 @@
+package com.authguard.dal.mysql;
+
 import com.authguard.dal.jdbc.*;
 import com.authguard.dal.jdbc.config.ImmutableJdbcConfig;
 
