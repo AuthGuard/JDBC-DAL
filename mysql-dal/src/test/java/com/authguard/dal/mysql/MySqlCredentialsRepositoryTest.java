@@ -1,5 +1,8 @@
-package com.authguard.dal.jdbc;
+package com.authguard.dal.mysql;
 
+import com.authguard.dal.jdbc.ConnectionProvider;
+import com.authguard.dal.jdbc.JdbcCredentialsRepository;
+import com.authguard.dal.jdbc.TablesBootstrap;
 import com.authguard.dal.jdbc.config.ImmutableJdbcConfig;
 import com.authguard.dal.model.CredentialsDO;
 import com.authguard.dal.model.HashedPasswordDO;
@@ -14,7 +17,7 @@ import java.util.UUID;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-class JdbcCredentialsRepositoryTest {
+class MySqlCredentialsRepositoryTest {
 
     private JdbcCredentialsRepository credentialsRepository;
 
