@@ -1,5 +1,8 @@
-package com.authguard.dal.jdbc;
+package com.authguard.dal.mysql;
 
+import com.authguard.dal.jdbc.ConnectionProvider;
+import com.authguard.dal.jdbc.JdbcPermissionsRepository;
+import com.authguard.dal.jdbc.TablesBootstrap;
 import com.authguard.dal.jdbc.config.ImmutableJdbcConfig;
 import com.authguard.dal.model.PermissionDO;
 import org.junit.jupiter.api.*;
@@ -12,7 +15,7 @@ import java.util.UUID;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-class JdbcPermissionsRepositoryTest {
+class MySqlPermissionsRepositoryTest {
 
     private ConnectionProvider connectionProvider;
     private JdbcPermissionsRepository permissionsRepository;
