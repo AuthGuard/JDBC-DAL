@@ -27,6 +27,7 @@ public class JdbcAccountsRepository implements AccountsRepository {
     private final TemplateStatement getByIdStatement;
     private final TemplateStatement saveStatement;
     private final TemplateStatement savePermissionsStatement;
+    private final TemplateStatement findByRoleStatement;
 
     private final PermissionsRepository permissionsRepository;
     private final RolesRepository rolesRepository;
@@ -47,6 +48,9 @@ public class JdbcAccountsRepository implements AccountsRepository {
                 .prepare(connectionProvider.getConnection());
 
         this.savePermissionsStatement = parser.parse(AccountsStatements.INSERT_PERMISSION_STATEMENT)
+                .prepare(connectionProvider.getConnection());
+
+        this.findByRoleStatement = parser.parse(AccountsStatements.FIND_BY_ROLE_STATEMENT)
                 .prepare(connectionProvider.getConnection());
     }
 
@@ -104,7 +108,22 @@ public class JdbcAccountsRepository implements AccountsRepository {
 
     @Override
     public List<AccountDO> getAdmins() {
-        throw new UnsupportedOperationException("Get all admins operation is currently not support");
+        try {
+            final PreparedStatement preparedStatement = findByRoleStatement.build(ImmutableMap.of("role", "admin"));
+            final List<AccountJoinedRow> rows = queryRunner.execute(preparedStatement, AccountJoinedRow.class);
+
+            return rows.stream()
+                    .filter(row -> !row.isDeleted() && row.isActive())
+                    .map(row -> AccountDO.builder()
+                            .id(row.getId())
+                            .deleted(row.isDeleted())
+                            .active(row.isActive())
+                            .scopes(Collections.singleton(row.getScopes()))
+                            .build()
+                    ).collect(Collectors.toList());
+        } catch (final SQLException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     private List<PermissionDO> getPermissionsForAccount(final List<AccountJoinedRow> rows) {

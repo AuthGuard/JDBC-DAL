@@ -20,4 +20,10 @@ public class AccountsStatements {
             .table("account_permissions")
             .values(Arrays.asList("${accountId}", "${permissionId}"))
             .build();
+
+    public static final String FIND_BY_ROLE_STATEMENT = TemplateBuilder.select()
+            .table("accounts")
+            .joinedStatement("account_roles on account_roles.accountId = accounts.id join roles on roles.id = account_roles.roleId")
+            .whereStatement("roles.name = ${role}")
+            .build();
 }
