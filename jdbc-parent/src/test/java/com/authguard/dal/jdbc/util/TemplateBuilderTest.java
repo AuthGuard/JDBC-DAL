@@ -51,7 +51,7 @@ class TemplateBuilderTest {
                 .joinedStatement("column-1 = 5")
                 .build();
 
-        final String expected = "SELECT * FROM accounts JOIN column-1 = 5";
+        final String expected = "SELECT * FROM accounts LEFT JOIN column-1 = 5";
 
         assertThat(actual).isEqualTo(expected);
     }

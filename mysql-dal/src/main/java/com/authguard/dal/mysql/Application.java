@@ -1,25 +1,24 @@
 package com.authguard.dal.mysql;
 
-import com.authguard.dal.jdbc.*;
+import com.authguard.dal.jdbc.ConnectionProvider;
+import com.authguard.dal.jdbc.TablesBootstrap;
 import com.authguard.dal.jdbc.config.ImmutableJdbcConfig;
-
-import java.sql.SQLException;
 
 public class Application {
 
-    public static void main(String[] args) throws SQLException {
+    public static void main(String[] args) {
         // create the connection
-        final ConnectionProvider connectionProvider = new ConnectionProvider(
-                ImmutableJdbcConfig.builder()
-                        .connectionString("jdbc:mysql://127.0.0.1:3306/test")
-                        .username("root")
-                        .password("my-secret-pw")
-                        .build()
-        );
+        final ImmutableJdbcConfig jdbcConfig = ImmutableJdbcConfig.builder()
+                .connectionString("jdbc:mysql://127.0.0.1:3306/test")
+                .username("root")
+                .password("my-secret-pw")
+                .build();
+
+        final ConnectionProvider connectionProvider = new ConnectionProvider(jdbcConfig);
 
         // create the tables
-        final TablesBootstrap tablesBootstrap = new TablesBootstrap(connectionProvider);
+        final TablesBootstrap tablesBootstrap = new TablesBootstrap(jdbcConfig);
 
-        tablesBootstrap.bootstrap();
+        tablesBootstrap.run();
     }
 }
