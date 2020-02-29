@@ -1,5 +1,10 @@
 package com.authguard.dal.jdbc;
 
+import com.authguard.bootstrap.BootstrapStep;
+import com.authguard.config.ConfigContext;
+import com.authguard.dal.jdbc.config.ImmutableJdbcConfig;
+import com.google.inject.Inject;
+import com.google.inject.name.Named;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -11,23 +16,41 @@ import java.util.Optional;
 import java.util.Properties;
 import java.util.stream.Collectors;
 
-public class TablesBootstrap {
+public class TablesBootstrap implements BootstrapStep {
     private Logger log = LoggerFactory.getLogger(this.getClass());
 
     private final JdbcQueryRunner queryRunner;
+    private final ConnectionProvider connectionProvider;
 
-    public TablesBootstrap(final ConnectionProvider connectionProvider) {
-        queryRunner = new JdbcQueryRunner(connectionProvider.getConnection());
+    @Inject
+    public TablesBootstrap(@Named("jdbc") final ConfigContext jdbcConfig) {
+        this(jdbcConfig.asConfigBean(ImmutableJdbcConfig.class));
     }
 
-    public void bootstrap() throws SQLException {
+    public TablesBootstrap(final ImmutableJdbcConfig jdbcConfig) {
+        this.connectionProvider = new ConnectionProvider(jdbcConfig);
+        this.queryRunner = new JdbcQueryRunner(connectionProvider.getConnection());
+    }
+
+    @Override
+    public void run() {
         final Properties properties = loadTablesProperties();
         final Map<String, String> tables = parseMap(properties, "tables");
 
-        for (final Map.Entry<String, String> table : tables.entrySet()) {
-            log.info("Creating table {}", table.getKey());
-            queryRunner.execute(table.getValue());
-            log.info("Table {} was successfully created", table.getKey());
+        try {
+            for (final Map.Entry<String, String> table : tables.entrySet()) {
+                log.info("Creating table {}", table.getKey());
+                queryRunner.execute(table.getValue());
+                log.info("Table {} was successfully created", table.getKey());
+            }
+        } catch (final SQLException e) {
+            throw new RuntimeException(e);
+        } finally {
+            try {
+                connectionProvider.getConnection().close();
+            } catch (SQLException e) {
+                log.error("Failed to close connection", e);
+            }
         }
     }
 

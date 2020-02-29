@@ -17,19 +17,19 @@ import static org.assertj.core.api.Assertions.assertThat;
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class MySqlPermissionsRepositoryTest {
 
-    private ConnectionProvider connectionProvider;
     private JdbcPermissionsRepository permissionsRepository;
 
     @BeforeAll
     void setup() throws SQLException {
-        connectionProvider = new ConnectionProvider(
-                ImmutableJdbcConfig.builder()
-                        .connectionString("jdbc:mysql://127.0.0.1:3306/test")
-                        .username("root")
-                        .password("my-secret-pw")
-                        .build());
+        final ImmutableJdbcConfig jdbcConfig = ImmutableJdbcConfig.builder()
+                .connectionString("jdbc:mysql://127.0.0.1:3306/test")
+                .username("root")
+                .password("my-secret-pw")
+                .build();
 
-        new TablesBootstrap(connectionProvider).bootstrapTable("permissions");
+        final ConnectionProvider connectionProvider = new ConnectionProvider(jdbcConfig);
+
+        new TablesBootstrap(jdbcConfig).bootstrapTable("permissions");
 
         permissionsRepository = new JdbcPermissionsRepository(connectionProvider);
     }

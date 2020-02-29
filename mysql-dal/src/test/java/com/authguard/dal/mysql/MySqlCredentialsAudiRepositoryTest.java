@@ -25,14 +25,15 @@ class MySqlCredentialsAudiRepositoryTest {
 
     @BeforeAll
     void setup() throws SQLException {
-        final ConnectionProvider connectionProvider = new ConnectionProvider(
-                ImmutableJdbcConfig.builder()
-                        .connectionString("jdbc:mysql://127.0.0.1:3306/test")
-                        .username("root")
-                        .password("my-secret-pw")
-                        .build());
+        final ImmutableJdbcConfig jdbcConfig = ImmutableJdbcConfig.builder()
+                .connectionString("jdbc:mysql://127.0.0.1:3306/test")
+                .username("root")
+                .password("my-secret-pw")
+                .build();
 
-        new TablesBootstrap(connectionProvider).bootstrapTable("credentials_audit");
+        final ConnectionProvider connectionProvider = new ConnectionProvider(jdbcConfig);
+
+        new TablesBootstrap(jdbcConfig).bootstrapTable("credentials_audit");
 
         credentialsAudiRepository = new JdbcCredentialsAudiRepository(connectionProvider);
     }
